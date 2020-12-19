@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>IoT HUB 테스트</title>
+    <link href="styles/main.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    <div id="app">
+        <header>
+            <div class="head-wrap childVertMid">
+                <span class="head-wrap__title">IoT HUB 테스트</span>
+            </div>
+        </header>
+
+        <div class="body-cont">
+            <div class="steps-cont">
+                <div class="steps-line-wrap">
+                    <div class="steps-line"></div>
+                </div>
+                <ul>
+                    <li v-for="step in steps" class="step-wrap">
+                        <div class="step-wrap__mark childVertMid">
+                            <span v-if="step.state === EStepState.ONGOING" class="step-wrap__state--ongoing">{{step.id + 1}}</span>
+                            <span v-else-if="step.state === EStepState.PASS" class="step-wrap__state--pass"></span>
+                            <span v-else class="step-wrap__state--none"></span>
+                            <span class="full-dummy"></span>
+                        </div>
+                        <p class="step-wrap__title">{{step.text}}</p>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="content">
+                <div v-if="currentStep === EStep.STATE">
+                    <h2 class="content-title">IoT HUB 연결 상태 <span v-show="connectInfo.serial" style="color:#4b96e6;">({{connectInfo.serial}})</span></h2>
+                    <ul class="coninfo-items">
+                        <li class="coninfo-item childVertMid">
+                            <span class="coninfo-item__title">국가</span>
+                            <span class="coninfo-item__value">{{connectInfo.country === 'jp' ? '일본' : '한국'}}</span>
+                        </li>
+                        <li class="coninfo-item childVertMid">
+                            <span class="coninfo-item__title">펌웨어 버전</span>
+                            <span class="coninfo-item__value">{{connectInfo.firmware}}</span>
+                        </li>
+                        <li class="coninfo-item childVertMid">
+                            <span class="coninfo-item__title">IP 주소</span>
+                            <span class="coninfo-item__value">{{connectInfo.ipAddress}}</span>
+                        </li>
+                        <li class="coninfo-item childVertMid">
+                            <span class="coninfo-item__title">MAC 주소</span>
+                            <span class="coninfo-item__value">{{connectInfo.macAddress}}</span>
+                        </li>
+                        <li class="coninfo-item childVertMid">
+                            <span class="coninfo-item__title">네트워크 타입</span>
+                            <span class="coninfo-item__value">{{connectInfo.networkType}}</span>
+                        </li>
+                        <li class="coninfo-item childVertMid">
+                            <span class="coninfo-item__title">Z-Wave Home ID</span>
+                            <span class="coninfo-item__value">{{connectInfo.zwaveId}}</span>
+                        </li>
+                        <li class="coninfo-item childVertMid multiline">
+                            <span class="coninfo-item__title">Bluetooth</span>
+                            <span class="coninfo-item__value">
+                                <div class="table" v-show="connectInfo.bluetooth">
+                                    <div class="mid-wrap">
+                                        {{connectInfo.bluetooth}}
+                                        <span style="color:#e94155;"> (확인 후 테스트 시작)</span>
+                                        <br>
+                                        <span style="color:#666666;font-size:16px;">ㆍBluetooth View APP에서 메뉴 > File > Reset 시킨 후에 확인바랍니다.</span>
+                                    </div>
+                                </div>
+                            </span>
+                        </li>
+                    </ul>
+                    <h2 class="content-title mgtop-short">센서 선택</h2>
+                    <ul class="coninfo-items">
+                        <li class="coninfo-item childVertMid">
+                            <span class="coninfo-item__title">테스트 센서</span>
+                            <span class="coninfo-item__value">
+                                <select v-model="sensorType" class="coninfo-item__select">
+                                    <option v-for="option in sensorTypeOptions" :value="option.value">
+                                        {{ option.text }}
+                                    </option>
+                                </select>
+                            </span>
+                        </li>
+                    </ul>
+                    <button class="step-btn" @click="setStepState(EStep.LED, EStepState.ONGOING)">테스트 시작</button>
+                </div>
+
+                <div v-if="currentStep === EStep.LED">
+                    <h2 class="content-title">LED 확인</h2>
+                    <div class="content-box">
+                        <p class="content-desc">LED가 아래 색상 순으로 켜집니다.<br>모든 색이 정상적으로 표시되는지 확인 합니다.</p>
+                        <img class="led-img" src="images/img-iot-hub-led.png">
+                    </div>
+                    <button class="step-btn" @click="setStepState(EStep.SENSOR_ADD, EStepState.ONGOING)">다음</button>
+                </div>
+
+                <div v-if="currentStep === EStep.SENSOR_ADD">
+                    <div v-if="sensorAddState === ESensorAddState.MODE_WAIT">
+                        <div class="loading-wrap">
+                            <img src="images/progress_rolling_blue.svg">
+                            <p class="loading-wrap__text">센서 설치를 준비하고 있습니다.</p>
+                        </div>
+                    </div>
+                    <div v-else-if="sensorAddState === ESensorAddState.MODE_ON_SUCCESS || sensorAddState === ESensorAddState.ADD_WAIT">
+                        <h2 class="content-title">센서 추가</h2>
+                        <div class="content-box">
+                            <h2 class="content-box-title">{{sensorType === ESensorType.PLUG ? '스마트 플러그' : '문열림 센서'}}</h2>
+                            <p class="content-desc mg-top">
+                                {{sensorType === ESensorType.PLUG ?
+                                '센서 옆면의 버튼을 5초 이상 꾹- 누른 후 버튼 상단의 LED가 빠르게 깜박이는지 확인해주세요.' :
+                                '고정판을 분리한 후 표시된 방향으로 연속해서 5회 이상 빠르게 눌러주세요.'}}
+                            </p>
+                            <img class="plug-img" :src="sensorType === ESensorType.PLUG ? 'images/img-sensor-plug.svg' : 'images/img-sensor-magnetic.svg'">
+                            <div v-if="sensorAddState === ESensorAddState.ADD_WAIT" class="content-box-loading table">
+                                <div class="mid-wrap">
+                                    <img src="images/progress_rolling_blue.svg">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else-if="sensorAddState === ESensorAddState.ADD_SUCCESS">
+                        <h2 class="content-title">센서 추가</h2>
+                        <div class="content-box">
+                            <h2 class="content-box-title">{{sensorType === ESensorType.PLUG ? '플러그 테스트' : '문열림 센서 테스트'}}</h2>
+                            <p class="content-desc mg-top">{{sensorType === ESensorType.PLUG ? '아래 버튼을 눌러 스마트 플러그가 정상 동작하는지 확인해주세요.' : '문열림 센서를 붙였다 떼었다 해서 제대로 작동하는지 확인해 주세요.'}}</p>
+                            <div v-if="sensorType === ESensorType.PLUG" class="plug-btn-wrap" :class="{on: sensorState === ESensorState.PLUG_ON}"
+                                 @click="reqSensorStateChange(sensorState === ESensorState.PLUG_ON ? ESensorState.PLUG_OFF : ESensorState.PLUG_ON)">
+                                <div class="plug-btn-wrap__hover-dim"></div>
+                                <div class="plug-btn-wrap__inbtn"></div>
+                                <p class="plug-btn-wrap__text">{{sensorState === ESensorState.PLUG_ON ? '켜짐' : '꺼짐'}}</p>
+                                <img v-if="sensorChangeState === ESensorChangeState.CHANGING" class="s-rolling" src="images/progress_rolling_blue.svg">
+                            </div>
+                            <div v-if="sensorType !== ESensorType.PLUG" style="margin-top:47px;">
+                                <img :src="sensorState === ESensorState.DOOR_OPEN ? 'images/img-test-magnetic-off.svg' : 'images/img-test-magnetic-on.svg'">
+                                <p class="door-status-info">{{sensorState === ESensorState.DOOR_OPEN ? '열림' : '닫힘'}}</p>
+                                <div v-if="sensorChangeState === ESensorChangeState.CHANGING" class="content-box-loading table">
+                                    <div class="mid-wrap">
+                                        <img src="images/progress_rolling_blue.svg">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p v-if="sensorType === ESensorType.PLUG" class="help-idc-wrap childVertMid">
+                            <img src="images/ic-discription-gray.svg">
+                            <span>키보드의 Enter 키를 누르면 켜짐/꺼짐을 제어 할 수 있습니다.</span>
+                        </p>
+                        <button v-if="sensorChangeState === ESensorChangeState.CHANGED" class="step-btn" @click="setStepState(EStep.SENSOR_REMOVE, EStepState.ONGOING)">다음</button>
+                    </div>
+                    <div v-else-if="sensorAddState === ESensorAddState.MODE_ON_FAIL || sensorAddState === ESensorAddState.ADD_FAIL">
+                        <h2 class="content-title">센서 추가</h2>
+                        <div class="content-box s-reset-wrap childVertMid" :class="{plug: sensorType === ESensorType.PLUG}">
+                            <img class="s-reset-wrap__img" :src="sensorType === ESensorType.PLUG ? 'images/img-sensor-reset-plug.svg' : 'images/img-sensor-reset-magnetic.svg'">
+                            <div class="s-reset-wrap__desc">
+                                <h2 class="s-reset-wrap__desc-tit">센서 리셋하기</h2>
+                                <p class="s-reset-wrap__subtext">센서 등록에 실패했습니다. 아래 설명처럼 센서를 리셋한 후 다시 설치해주세요.</p>
+                                <br>
+                                <div v-if="sensorType === ESensorType.PLUG" class="s-reset-wrap__maintext">
+                                    <p>1. 플러그를 콘센트에 꽂은 후 센서의 전원 버튼을 눌러주세요.</p>
+                                    <p>2. 전원 버튼을 꾹- 누르면 5초 후에 LED가 깜박거리고, 다시 5초 후에 깜박거린 후 손을 떼면 센서 리셋이 완료 됩니다.</p>
+                                    <p>3. 센서를 추가하려면 처음으로 돌아가 다시 설치해주세요.</p>
+                                </div>
+                                <div v-else class="s-reset-wrap__maintext">
+                                    <p>1. 센서의 커버를 연 후 배터리 1개를 잠시 분리해주세요.</p>
+                                    <p>2. 센서에 표시된 버튼을 누른 상태에서 배터리를 다시 장착하면 리셋이 완료됩니다.</p>
+                                    <p>3. 센서를 추가하려면 처음으로 돌아가 다시 설치해주세요.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="step-btn reset" @click="setStepState(EStep.STATE, EStepState.ONGOING)">처음으로 돌아가기</button>
+                    </div>
+                </div>
+
+                <div v-if="currentStep === EStep.SENSOR_REMOVE">
+                    <div v-if="sensorRemoveState === ESensorRemoveState.MODE_WAIT">
+                        <div class="loading-wrap">
+                            <img src="images/progress_rolling_blue.svg">
+                            <p class="loading-wrap__text">센서 삭제를 준비하고 있습니다.</p>
+                        </div>
+                    </div>
+                    <div v-else-if="sensorRemoveState === ESensorRemoveState.MODE_ON_SUCCESS || sensorRemoveState === ESensorRemoveState.REMOVE_WAIT">
+                        <h2 class="content-title">센서 삭제</h2>
+                        <div class="content-box">
+                            <h2 class="content-box-title">{{sensorType === ESensorType.PLUG ? '스마트 플러그' : '문열림 센서'}}</h2>
+                            <p class="content-desc mg-top">
+                                {{sensorType === ESensorType.PLUG ?
+                                '센서 옆면의 버튼을 5초 이상 꾹- 누른 후 버튼 상단의 LED가 빠르게 깜박이는지 확인해주세요.' :
+                                '고정판을 분리한 후 표시된 방향으로 연속해서 5회 이상 빠르게 눌러주세요.'}}
+                            </p>
+                            <img class="plug-img" :src="sensorType === ESensorType.PLUG ? 'images/img-sensor-plug.svg' : 'images/img-sensor-magnetic.svg'">
+                            <div v-if="sensorRemoveState === ESensorRemoveState.REMOVE_WAIT" class="content-box-loading table">
+                                <div class="mid-wrap">
+                                    <img src="images/progress_rolling_blue.svg">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else-if="sensorRemoveState === ESensorRemoveState.REMOVE_SUCCESS">
+                        <h2 class="content-title">센서 삭제</h2>
+                        <div class="content-box">
+                            <img class="check-img" src="images/ic-process-success-check.svg">
+                            <h2 class="content-box-btitle">센서 삭제 완료</h2>
+                            <p class="content-desc mg-htop">센서 삭제가 완료되었습니다. 다음 단계를 진행해주세요.</p>
+                        </div>
+                        <button class="step-btn" @click="setStepState(EStep.ZWAVE_RESET, EStepState.ONGOING)">다음</button>
+                    </div>
+                    <div v-else-if="sensorRemoveState === ESensorRemoveState.MODE_ON_FAIL || sensorRemoveState === ESensorRemoveState.REMOVE_FAIL">
+                        <h2 class="content-title">센서 삭제</h2>
+                        <div class="content-box s-reset-wrap childVertMid" :class="{plug: sensorType === ESensorType.PLUG}">
+                            <img class="s-reset-wrap__img" :src="sensorType === ESensorType.PLUG ? 'images/img-sensor-reset-plug.svg' : 'images/img-sensor-reset-magnetic.svg'">
+                            <div class="s-reset-wrap__desc">
+                                <h2 class="s-reset-wrap__desc-tit">센서 리셋하기</h2>
+                                <p class="s-reset-wrap__subtext">센서 등록에 실패했습니다. 아래 설명처럼 센서를 리셋한 후 다시 설치해주세요.</p>
+                                <br>
+                                <div v-if="sensorType === ESensorType.PLUG" class="s-reset-wrap__maintext">
+                                    <p>1. 플러그를 콘센트에 꽂은 후 센서의 전원 버튼을 눌러주세요.</p>
+                                    <p>2. 전원 버튼을 꾹- 누르면 5초 후에 LED가 깜박거리고, 다시 5초 후에 깜박거린 후 손을 떼면 센서 리셋이 완료 됩니다.</p>
+                                    <p>3. 센서를 추가하려면 처음으로 돌아가 다시 설치해주세요.</p>
+                                </div>
+                                <div v-else class="s-reset-wrap__maintext">
+                                    <p>1. 센서의 커버를 연 후 배터리 1개를 잠시 분리해주세요.</p>
+                                    <p>2. 센서에 표시된 버튼을 누른 상태에서 배터리를 다시 장착하면 리셋이 완료됩니다.</p>
+                                    <p>3. 센서를 추가하려면 처음으로 돌아가 다시 설치해주세요.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="step-btn reset" @click="setStepState(EStep.STATE, EStepState.ONGOING)">처음으로 돌아가기</button>
+                    </div>
+                </div>
+
+                <div v-if="currentStep === EStep.ZWAVE_RESET">
+                    <div v-if="zwaveResetState !== EZwaveResetState.SUCCESS">
+                        <h2 class="content-title">Z-Wave 리셋</h2>
+                        <div class="content-box reset-info-wrap childVertMid">
+                            <img class="reset-info-wrap__img" src="images/img-zwave-reset.png">
+                            <div class="reset-info-wrap__desc">
+                                <p>1. IoT HUB 옆면의 구멍에 핀을 넣어 연속해서 <span style="text-decoration: underline;">3회 이상 빠르게 눌러주세요.</span></p>
+                                <p>2. 반대편 LED가 <span style="color:#d88406;">노란색</span>으로 깜박이면 Z-Wave 리셋이 완료됩니다.</p>
+                            </div>
+                            <div v-if="zwaveResetState === EZwaveResetState.ONGOING" class="content-box-loading table">
+                                <div class="mid-wrap">
+                                    <img src="images/progress_rolling_blue.svg">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else>
+                        <h2 class="content-title">Z-Wave 리셋</h2>
+                        <div class="content-box">
+                            <img class="check-img" src="images/ic-process-success-check.svg">
+                            <h2 class="content-box-btitle">Z-Wave 리셋 완료</h2>
+                            <p class="content-desc mg-htop">Z-Wave 리셋이 완료되었습니다. 다음 단계를 진행해주세요.</p>
+                        </div>
+                        <button class="step-btn" @click="setStepState(EStep.HUB_RESET, EStepState.ONGOING)">다음</button>
+                    </div>
+                </div>
+
+                <div v-if="currentStep === EStep.HUB_RESET">
+                    <div v-if="hubResetState !== EHubResetState.SUCCESS">
+                        <h2 class="content-title">IoT HUB 리셋</h2>
+                        <div class="content-box reset-info-wrap childVertMid">
+                            <img class="reset-info-wrap__img" src="images/img-iot-hub-reset.png">
+                            <div class="reset-info-wrap__desc">
+                                <p>1. IoT HUB 옆면의 구멍에 핀을 넣어 <span style="text-decoration: underline;">3초 이상 꾹- 눌러주세요.</span></p>
+                                <p>2. 반대편 LED가 <span style="color:#ff3a16;">빨간색</span>으로 깜박이면 리셋이 완료됩니다.</p>
+                            </div>
+                            <div v-if="hubResetState === EHubResetState.ONGOING" class="content-box-loading table">
+                                <div class="mid-wrap">
+                                    <img src="images/progress_rolling_blue.svg">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else>
+                        <h2 class="content-title">IoT HUB 리셋</h2>
+                        <div class="content-box">
+                            <img class="check-img" src="images/ic-process-success-check.svg">
+                            <h2 class="content-box-btitle">IoT HUB 리셋 완료</h2>
+                            <p class="content-desc mg-htop">테스트가 완료되었습니다.</p>
+                        </div>
+                        <button class="step-btn" @click="setStepState(EStep.STATE, EStepState.ONGOING)">완료</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="lib/vue.global.prod.js"></script>
+    <script src="lib/dkToast.umd.min.js"></script>
+    <script src="lib/socket.io.slim.js"></script>
+    <script type="module" src="src/components/index.js"></script>
+</body>
+</html>

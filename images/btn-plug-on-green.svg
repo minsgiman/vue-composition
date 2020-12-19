@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="240" height="240" viewBox="0 0 240 240">
+    <defs>
+        <filter id="0cjp6hed3a" width="109.5%" height="109.5%" x="-4.7%" y="-4.2%" filterUnits="objectBoundingBox">
+            <feMorphology in="SourceAlpha" operator="dilate" radius=".5" result="shadowSpreadOuter1"/>
+            <feOffset dy="1" in="shadowSpreadOuter1" result="shadowOffsetOuter1"/>
+            <feGaussianBlur in="shadowOffsetOuter1" result="shadowBlurOuter1" stdDeviation="2.5"/>
+            <feComposite in="shadowBlurOuter1" in2="SourceAlpha" operator="out" result="shadowBlurOuter1"/>
+            <feColorMatrix in="shadowBlurOuter1" values="0 0 0 0 0.188235294 0 0 0 0 0.847058824 0 0 0 0 0.298039216 0 0 0 0.15 0"/>
+        </filter>
+        <path id="84et0rzdsb" d="M101.84 19h36.32c28.284 0 38.67 2.97 49.1 8.548 10.429 5.578 18.614 13.763 24.192 24.193C217.03 62.17 220 72.556 220 100.84v36.318c0 28.285-2.97 38.67-8.548 49.1-5.578 10.43-13.763 18.615-24.193 24.193-10.43 5.578-20.815 8.548-49.1 8.548h-36.318c-28.285 0-38.67-2.97-49.1-8.548-10.43-5.578-18.615-13.763-24.193-24.193C22.97 175.83 20 165.444 20 137.16v-36.318c0-28.285 2.97-38.67 8.548-49.1 5.578-10.43 13.763-18.615 24.193-24.193C63.17 21.97 73.556 19 101.84 19z"/>
+    </defs>
+    <g fill="none" fill-rule="evenodd">
+        <g>
+            <g>
+                <path d="M0 0H240V240H0z" transform="translate(-839 -444) translate(839 444)"/>
+                <g transform="translate(-839 -444) translate(839 444)">
+                    <use fill="#000" filter="url(#0cjp6hed3a)" xlink:href="#84et0rzdsb"/>
+                    <path fill="#FFF" stroke="#23C43E" stroke-linejoin="square" stroke-width="2" d="M101.84 20h36.32c28.002 0 38.298 2.906 48.627 8.43 10.253 5.483 18.3 13.53 23.783 23.783 5.524 10.329 8.43 20.625 8.43 48.628h0v36.318c0 28.003-2.906 38.299-8.43 48.628-5.483 10.253-13.53 18.3-23.783 23.783-10.329 5.524-20.625 8.43-48.628 8.43h0-36.318c-28.003 0-38.299-2.906-48.628-8.43-10.253-5.483-18.3-13.53-23.783-23.783C23.906 175.458 21 165.162 21 137.16h0v-36.318c0-28.003 2.906-38.299 8.43-48.628 5.483-10.253 13.53-18.3 23.783-23.783C63.542 22.906 73.838 20 101.84 20h0z"/>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>
